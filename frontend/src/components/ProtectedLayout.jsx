@@ -1,119 +1,102 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { NavLink } from 'react-router-dom';
 import axios from '../axios';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function DefaultLayout() {
-	const { user, setUser } = useAuth();
+    const { user, setUser } = useAuth();
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
-	// check if user is logged in or not from server
-	useEffect(() => {
-		(async () => {
-			try {
-				const resp = await axios.get('/user');
-				if (resp.status === 200) {
-					setUser(resp.data.data);
-				}
-			} catch (error) {
-				if (error.response.status === 401) {
-					localStorage.removeItem('user');
-					window.location.href = '/';
-				}
-			}
-		})();
-	}, []);
+    // check if user is logged in or not from server
+    useEffect(() => {
+        (async () => {
+            try {
+                const resp = await axios.get('/user');
+                if (resp.status === 200) {
+                    setUser(resp.data.data);
+                }
+            } catch (error) {
+                if (error.response.status === 401) {
+                    localStorage.removeItem('user');
+                    window.location.href = '/';
+                }
+            }
+        })();
+    }, []);
 
-	// if user is not logged in, redirect to login page
-	if (!user) {
-		return <Navigate to="/" />;
-	}
+    // if user is not logged in, redirect to login page
+    if (!user) {
+        return <Navigate to="/" />;
+    }
 
-	// logout user
-	const handleLogout = async () => {
-		try {
-			const resp = await axios.post('/logout');
-			if (resp.status === 200) {
-				localStorage.removeItem('user');
-				window.location.href = '/';
-			}
-		} catch (error) {
-			console.log(error);
-		}
-	};
-	return (
-		<>
-			<nav className="bg-white border-gray-200 px-2 sm:px-4 py-2.5 dark:bg-gray-900">
-				<div className="container flex flex-wrap items-center justify-between mx-auto">
-					<a href="https://dcodemania.com/" className="flex items-center">
-						<img
-							src="https://dcodemania.com/img/logo.svg"
-							className="h-6 mr-3 sm:h-9"
-							alt="DCodeMania Logo"
-						/>
-						<span className="self-center text-xl font-semibold whitespace-nowrap dark:text-white">
-							DCodeMania
-						</span>
-					</a>
-					<button
-						data-collapse-toggle="navbar-default"
-						type="button"
-						className="inline-flex items-center p-2 ml-3 text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
-						aria-controls="navbar-default"
-						aria-expanded="false">
-						<span className="sr-only">Open main menu</span>
-						<svg
-							className="w-6 h-6"
-							aria-hidden="true"
-							fill="currentColor"
-							viewBox="0 0 20 20"
-							xmlns="http://www.w3.org/2000/svg">
-							<path
-								fillRule="evenodd"
-								d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
-								clipRule="evenodd"></path>
-						</svg>
-					</button>
-					<div className="hidden w-full md:block md:w-auto" id="navbar-default">
-						<ul className="flex flex-col p-4 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 md:mt-0 md:text-sm md:font-medium md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
-							<li>
-								<NavLink
-									to="/profile"
-									className={({ isActive }) =>
-										isActive
-											? 'block py-2 pl-3 pr-4 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 dark:text-white'
-											: 'block py-2 pl-3 pr-4 rounded md:bg-transparent md:p-0 dark:text-gray-400 md:dark:hover:text-white'
-									}>
-									Profile
-								</NavLink>
-							</li>
-							<li>
-								<NavLink
-									to="/about"
-									className={({ isActive }) =>
-										isActive
-											? 'block py-2 pl-3 pr-4 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 dark:text-white'
-											: 'block py-2 pl-3 pr-4 rounded md:bg-transparent md:p-0 dark:text-gray-400 md:dark:hover:text-white'
-									}>
-									About
-								</NavLink>
-							</li>
+    // logout user
+    const handleLogout = async () => {
+        try {
+            const resp = await axios.post('/logout');
+            if (resp.status === 200) {
+                localStorage.removeItem('user');
+                window.location.href = '/';
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
 
-							<li>
-								<a
-									onClick={handleLogout}
-									href="#"
-									className="block py-2 pl-3 pr-4 text-gray-700 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-gray-400 md:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent">
-									Logout
-								</a>
-							</li>
-						</ul>
-					</div>
-				</div>
-			</nav>
-			<main className="container flex justify-center flex-col items-center mt-10">
-				<Outlet />
-			</main>
-		</>
-	);
+    return (
+        <div className="flex h-screen bg-gray-100">
+            <nav className={`fixed top-0 left-0 h-full w-64 bg-gradient-to-b from-blue-800 to-blue-600 text-white shadow-xl transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out md:relative md:translate-x-0`}>
+                <div className="flex flex-col h-full">
+                    <div className="flex items-center justify-between p-4 bg-blue-900">
+                        <a href="https://dcodemania.com/" className="flex items-center">
+                            <img src="https://dcodemania.com/img/logo.svg" className="h-8 mr-3" alt="DCodeMania Logo" />
+                            <span className="text-2xl font-bold">DCodeMania</span>
+                        </a>
+                        <button className="md:hidden text-white" onClick={() => setSidebarOpen(false)}>
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <ul className="mt-4 flex-1 px-2 space-y-2">
+                        <li>
+                            <NavLink to="/profile" className={({ isActive }) => isActive ? 'block py-3 px-4 bg-blue-700 rounded-lg shadow-lg' : 'block py-3 px-4 text-gray-200 hover:bg-blue-700 hover:shadow-lg rounded-lg'}>
+                                Profile
+                            </NavLink>
+                        </li>
+                        <li>
+                            <NavLink to="/about" className={({ isActive }) => isActive ? 'block py-3 px-4 bg-blue-700 rounded-lg shadow-lg' : 'block py-3 px-4 text-gray-200 hover:bg-blue-700 hover:shadow-lg rounded-lg'}>
+                                About
+                            </NavLink>
+                        </li>
+                        <li>
+                            <a onClick={handleLogout} href="#" className="block py-3 px-4 text-gray-200 hover:bg-blue-700 hover:shadow-lg rounded-lg">
+                                Logout
+                            </a>
+                        </li>
+                    </ul>
+                    <div className="p-4">
+                        <a href="https://github.com/dcodemania" target="_blank" rel="noopener noreferrer" className="block py-3 px-4 text-center text-blue-900 bg-white rounded-lg shadow-lg hover:bg-gray-100">
+                            <span className="font-bold">GitHub</span>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+            <div className="flex-1 flex flex-col overflow-hidden">
+                <header className="bg-white shadow-md p-4 flex items-center justify-between">
+                    <button className="md:hidden text-gray-500" onClick={() => setSidebarOpen(true)}>
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                        </svg>
+                    </button>
+                    <div>
+                        <a href="https://dcodemania.com/" className="text-xl font-bold text-gray-800">DCodeMania</a>
+                    </div>
+                </header>
+                <main className="flex-1 overflow-y-auto p-4">
+                    <Outlet />
+                </main>
+            </div>
+        </div>
+    );
 }
