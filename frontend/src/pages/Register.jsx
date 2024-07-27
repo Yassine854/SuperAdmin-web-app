@@ -17,12 +17,13 @@ export default function Register() {
 			email: email.value,
 			password: password.value,
 			password_confirmation: cpassword.value,
+            role:'2'
 		};
 		try {
 			const resp = await axios.post('/register', body);
 			if (resp.status === 200) {
 				setUser(resp.data.user);
-				return <Navigate to="/profile" />;
+				return <Navigate to="/dashboard" />;
 			}
 		} catch (error) {
 			if (error.response.status === 422) {

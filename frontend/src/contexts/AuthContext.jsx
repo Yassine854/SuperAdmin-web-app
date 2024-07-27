@@ -24,9 +24,16 @@ export const AuthProvider = ({ children }) => {
 
 	// csrf token generation for guest methods
 	const csrfToken = async () => {
-		await axios.get('http://localhost:8000/api/csrf-cookie');
-		return true;
-	};
+        try {
+            await axios.get('https://example.shop/api/csrf-cookie');
+            console.log('CSRF token fetched successfully');
+            return true;
+        } catch (error) {
+            console.error('Failed to fetch CSRF token:', error);
+            return false;
+        }
+    };
+
 	return (
 		<AuthContent.Provider value={{ user, setUser, csrfToken }}>
 			{children}

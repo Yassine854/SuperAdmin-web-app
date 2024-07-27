@@ -20,7 +20,7 @@ export default function Login() {
 			const resp = await axios.post('/login', body);
 			if (resp.status === 200) {
 				setUser(resp.data.user);
-				return <Navigate to="/profile" />;
+				return <Navigate to="/dashboard" />;
 			}
 		} catch (error) {
 			if (error.response.status === 401) {
@@ -108,7 +108,7 @@ export default function Login() {
 								className="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
 								Sign in
 							</button>
-                            
+
 							<p className="text-sm font-light text-gray-500 dark:text-gray-400">
 								Don't have an account yet?{' '}
 								<Link
