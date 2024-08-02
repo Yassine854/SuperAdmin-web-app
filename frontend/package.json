@@ -20,6 +20,7 @@
 		"react-router-dom": "^6.8.1",
 		"react-scripts": "^5.0.1",
 		"styled-components": "^6.1.11",
+		"sweetalert2": "^11.12.3",
 		"tw-elements-react": "^1.0.0-alpha-end"
 	},
 	"devDependencies": {

@@ -13,6 +13,8 @@ export default function Admin() {
     const [passwordError, setPasswordError] = useState('');
     const [admins, setAdmins] = useState([]); // State to store admins
     const [pending, setPending] = useState(true);
+    const [editMode, setEditMode] = useState(false);
+    const [selectedAdmin, setSelectedAdmin] = useState(null);
 
     useEffect(() => {
         const fetchAdmins = async () => {
@@ -34,6 +36,16 @@ export default function Admin() {
             setNameError('');
             setEmailError('');
             setPasswordError('');
+            setEditMode(false);
+            setSelectedAdmin(null);
+        } else if (editMode && selectedAdmin) {
+            // Pre-fill form data if in edit mode
+            setFormData({
+                name: selectedAdmin.name,
+                email: selectedAdmin.email,
+                password: '',
+                cpassword: '',
+            });
         }
     }, [isModalOpen]);
 
@@ -45,15 +57,22 @@ export default function Admin() {
             email,
             password,
             password_confirmation: cpassword,
-            role: '1',
         };
         try {
-            const resp = await axios.post('/CreateUser', body);
-            if (resp.status === 200) {
-                setAdmin(resp.data.admin);
-                console.log(resp.data.admin);
-                setIsModalOpen(false); // Close modal after successful submission
+            if (editMode && selectedAdmin) {
+                // Update existing admin
+                const resp = await axios.put(`/admins/update/${selectedAdmin._id}`, body);
+                if (resp.status === 200) {
+                    setAdmins(admins.map(admin => admin.id === resp.data.admin._id ? resp.data.admin : admin));
+                }
+            } else {
+                // Create new admin
+                const resp = await axios.post('/CreateUser', { ...body, role: '1' });
+                if (resp.status === 200) {
+                    setAdmins([...admins, resp.data.admin]);
+                }
             }
+            setIsModalOpen(false); // Close modal after successful submission
         } catch (error) {
             if (error.response.status === 422) {
                 const errors = error.response.data.errors;
@@ -69,23 +88,20 @@ export default function Admin() {
         setFormData({ ...formData, [name]: value });
     };
 
-    const modalFooter = (
-        <>
-            <button
-                type="submit"
-                className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-            >
-                Create
-            </button>
-            <button
-                type="button"
-                className="ml-3 bg-gray-100 transition duration-150 ease-in-out text-gray-600 hover:border-gray-400 hover:bg-gray-300 border rounded-lg text-sm px-5 py-2.5 text-center dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500 dark:hover:border-gray-500"
-                onClick={() => setIsModalOpen(false)}
-            >
-                Cancel
-            </button>
-        </>
-    );
+    const handleEdit = (admin) => {
+        setSelectedAdmin(admin);
+        setEditMode(true);
+        setIsModalOpen(true);
+    };
+
+    const handleBlock = async (_id) => {
+        try {
+            await axios.post(`/admins/block/${_id}`);
+            setAdmins(admins.filter(admin => admin._id !== _id));
+        } catch (error) {
+            console.error('Error deleting admin:', error);
+        }
+    };
 
     const columns = [
         {
@@ -94,7 +110,7 @@ export default function Admin() {
             sortable: true,
         },
         {
-            name: 'Nom',
+            name: 'Name',
             selector: (row) => row.name,
             sortable: true,
         },
@@ -102,6 +118,25 @@ export default function Admin() {
             name: 'Email',
             selector: (row) => row.email,
             sortable: true,
+        },
+        {
+            name: 'Actions',
+            cell: (row) => (
+                <div className="flex space-x-2">
+                    <button
+                        onClick={() => handleEdit(row)}
+                        className="text-blue-600 hover:text-blue-800"
+                    >
+                        Edit
+                    </button>
+                    <button
+                        onClick={() => handleBlock(row._id)}
+                        className="text-red-600 hover:text-red-800"
+                    >
+                        Block
+                    </button>
+                </div>
+            ),
         },
     ];
 
@@ -141,9 +176,25 @@ export default function Admin() {
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                title="Ajouter Admin"
+                title={editMode ? "Edit Admin" : "Add Admin"}
                 onSubmit={handleSubmit}
-                footer={modalFooter}
+                footer={(
+                    <>
+                        <button
+                            type="submit"
+                            className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                        >
+                            {editMode ? 'Update' : 'Create'}
+                        </button>
+                        <button
+                            type="button"
+                            className="ml-3 bg-gray-100 transition duration-150 ease-in-out text-gray-600 hover:border-gray-400 hover:bg-gray-300 border rounded-lg text-sm px-5 py-2.5 text-center dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500 dark:hover:border-gray-500"
+                            onClick={() => setIsModalOpen(false)}
+                        >
+                            Cancel
+                        </button>
+                    </>
+                )}
             >
                 <div>
                     <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
@@ -192,7 +243,6 @@ export default function Admin() {
                         placeholder="••••••••"
                         value={formData.password}
                         onChange={handleChange}
-                        required
                     />
                     {passwordError && <p className="text-sm text-red-600">{passwordError}</p>}
                 </div>
@@ -211,7 +261,6 @@ export default function Admin() {
                         className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                         value={formData.cpassword}
                         onChange={handleChange}
-                        required
                     />
                 </div>
             </Modal>
@@ -220,7 +269,7 @@ export default function Admin() {
                 className="block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center light:bg-blue-600 light:hover:bg-blue-700 light:focus:ring-blue-800 mb-4"
                 onClick={() => setIsModalOpen(true)}
             >
-                Ajouter Admin
+                Add Admin
             </button>
 
             <DataTable

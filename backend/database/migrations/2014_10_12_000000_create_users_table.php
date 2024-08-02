@@ -18,6 +18,7 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('role');
+            $table->boolean('blocked')->default(false);
             $table->string('subdomain')->nullable();
             $table->rememberToken();
             $table->timestamps();

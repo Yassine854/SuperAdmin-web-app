@@ -4,6 +4,7 @@ import Profile from './pages/Profile';
 import Client from './pages/client';
 import Admin from './pages/admin';
 import Dashboard from './pages/dashboard';
+import Role from './pages/role';
 
 
 import Register from './pages/Register';
@@ -44,6 +45,10 @@ const router = createBrowserRouter([
             {
 				path: '/admins',
 				element: <Admin />,
+			},
+            {
+				path: '/roles',
+				element: <Role />,
 			},
 		],
 	},

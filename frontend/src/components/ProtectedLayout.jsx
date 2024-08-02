@@ -12,20 +12,19 @@ export default function DefaultLayout() {
     useEffect(() => {
         console.log('Current user state:', user);
 
-        // (async () => {
-        //     try {
-        //         const resp = await axios.get('/user');
-        //         if (resp.status === 200) {
-        //             setUser(resp.data.data);
-        //         }
-        //     } catch (error) {
-        //         if (error.response.status === 401) {
-        //             console.log("sorrrrrrrrrry");
-        //             localStorage.removeItem('user');
-        //             window.location.href = '/';
-        //         }
-        //     }
-        // })();
+        (async () => {
+            try {
+                const resp = await axios.get('/user');
+                if (resp.status === 200) {
+                    setUser(resp.data.data);
+                }
+            } catch (error) {
+                if (error.response.status === 401) {
+                    localStorage.removeItem('user');
+                    window.location.href = '/';
+                }
+            }
+        })();
     }, []);
 
     // if user is not logged in, redirect to login page
@@ -99,8 +98,14 @@ export default function DefaultLayout() {
                                             </NavLink>
                                         </li>
                                     </ul>
+
                                 )}
                             </div>
+                        </li>
+                        <li>
+                            <NavLink to="/roles" className={({ isActive }) => isActive ? 'block py-3 px-4 bg-blue-700 rounded-lg shadow-lg' : 'block py-3 px-4 text-gray-200 hover:bg-blue-700 hover:shadow-lg rounded-lg'}>
+                                Roles
+                            </NavLink>
                         </li>
                         <li>
                             <NavLink to="/profile" className={({ isActive }) => isActive ? 'block py-3 px-4 bg-blue-700 rounded-lg shadow-lg' : 'block py-3 px-4 text-gray-200 hover:bg-blue-700 hover:shadow-lg rounded-lg'}>

@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\RoleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,7 +25,33 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/user', [AuthController::class, 'user']);
+
+    //Roles
+    Route::get('/roles', [RoleController::class, 'index']);
+    Route::post('/roles/create', [RoleController::class, 'create']);
+    Route::put('/roles/update/{id}', [RoleController::class, 'update']);
+    Route::delete('/roles/delete/{id}', [RoleController::class, 'destroy']);
+
+    //Admins
     Route::get('/admins', [AuthController::class, 'admins']);
-    Route::get('/clients', [AuthController::class, 'clients']);
+    Route::put('/admins/update/{id}', [AuthController::class, 'updateAdmin']);
+    Route::put('/admins/block/{id}', [AuthController::class, 'block']);
+
+    //Clients
+    Route::get('/user', [AuthController::class, 'user']);
+
+
+
+
+
+
+    // Route::get('/clients', [AuthController::class, 'clients']);
+});
+
+
+
+Route::domain('{subdomain}.example.shop')->group(function () {
+    Route::middleware(['auth:sanctum', 'subdomain'])->group(function () {
+        Route::get('/clients', [AuthController::class, 'clients']);
+    });
 });

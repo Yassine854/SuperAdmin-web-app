@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\LoginRequest;
-use App\Http\Requests\RegisterRequest;
-use App\Http\Resources\UserResource;
 use App\Models\User;
-use App\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use App\Http\Requests\LoginRequest;
+use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Requests\RegisterRequest;
+use App\Providers\RouteServiceProvider;
 
 class AuthController extends Controller {
     // register a new user method
@@ -20,6 +21,7 @@ class AuthController extends Controller {
             'name' => $data['name'],
             'email' => $data['email'],
             'role' => $data['role'],
+            'blocked'=> false,
             'password' => Hash::make($data['password']),
         ]);
         if ($user->role=="2"){
@@ -32,9 +34,12 @@ class AuthController extends Controller {
 
         $cookie = cookie('token', $token, 60 * 24); // 1 day
 
-        return response()->json([
-            'user' => $user,
-        ])->withCookie($cookie);
+        $role = $user->role == "1" ? 'Admin' : 'Client';
+
+            return response()->json([
+                'user' => $user,
+                'message' => $role . ' ajouté avec succès !'
+            ])->withCookie($cookie);
     }
 
 
@@ -48,6 +53,7 @@ class AuthController extends Controller {
             'email' => $data['email'],
             'role' => $data['role'],
             'password' => Hash::make($data['password']),
+            'blocked'=> false,
         ]);
         $subdomain = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $data['name'])) . $user->id;
         $user->subdomain = $subdomain;
@@ -116,6 +122,44 @@ class AuthController extends Controller {
         return response()->json([
             'clients' => $clients
         ]);
+    }
+
+    public function updateAdmin(Request $request, $id)
+{
+    $data = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => [
+                'nullable',
+                'email',
+                'max:255',
+                Rule::unique('users')->ignore($id),
+            ],
+        'password' => 'nullable|string|min:6|confirmed',
+    ]);
+
+    $admin = User::findOrFail($id);
+
+    $admin->name = $data['name'];
+    $admin->email = $data['email'];
+
+    if (!empty($data['password'])) {
+        $admin->password = Hash::make($data['password']);
+    }
+
+    $admin->save();
+
+    return response()->json($admin);
+}
+
+
+
+    public function block($id)
+    {
+        $user = User::findOrFail($id);
+        $user->block=True;
+        $user->save();
+
+        return response()->json(null, 204);
     }
 
 }
