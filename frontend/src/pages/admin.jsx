@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import DataTable from 'react-data-table-component';
 import Modal from '../components/CreateModal';
 import axios from '../axios';
+import Swal from 'sweetalert2'
 
 export default function Admin() {
     const { admin, setAdmin } = useAuth();
@@ -96,10 +97,54 @@ export default function Admin() {
 
     const handleBlock = async (_id) => {
         try {
-            await axios.post(`/admins/block/${_id}`);
-            setAdmins(admins.filter(admin => admin._id !== _id));
+
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You won't be able to revert this!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, Block!"
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  axios.put(`/admins/block/${_id}`);
+                  Swal.fire({
+                    title: "Blocked!",
+                    icon: "success"
+                  });
+                }
+              });
+            // setAdmins([...admins, resp.data.admin]);
         } catch (error) {
-            console.error('Error deleting admin:', error);
+            console.error('Error blocking admin:', error);
+        }
+    };
+
+
+    const handleUnBlock = async (_id) => {
+        try {
+
+            Swal.fire({
+                title: "Are you sure?",
+                text: "You won't be able to revert this!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, UnBlock!"
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  axios.put(`/admins/unblock/${_id}`);
+                  Swal.fire({
+                    title: "UnBlocked!",
+                    icon: "success"
+                  });
+                }
+              });
+            // setAdmins([...admins, resp.data.admin]);
+        } catch (error) {
+            console.error('Error Unblocking admin:', error);
         }
     };
 
@@ -129,12 +174,34 @@ export default function Admin() {
                     >
                         Edit
                     </button>
+
+
+
+
+                    {(() => {
+        if (row.blocked==false){
+            return (
                     <button
                         onClick={() => handleBlock(row._id)}
                         className="text-red-600 hover:text-red-800"
                     >
                         Block
                     </button>
+            )
+        }
+        else
+            return (
+
+        <button
+                        onClick={() => handleUnBlock(row._id)}
+                        className="text-green-600 hover:text-green-800"
+                    >
+                        Unblock
+                    </button>
+              )
+
+      })()}
+
                 </div>
             ),
         },

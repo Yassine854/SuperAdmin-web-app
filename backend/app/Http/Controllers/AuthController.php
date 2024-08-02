@@ -156,7 +156,16 @@ class AuthController extends Controller {
     public function block($id)
     {
         $user = User::findOrFail($id);
-        $user->block=True;
+        $user->blocked=true;
+        $user->save();
+
+        return response()->json(null, 204);
+    }
+
+    public function unblock($id)
+    {
+        $user = User::findOrFail($id);
+        $user->blocked=false;
         $user->save();
 
         return response()->json(null, 204);
