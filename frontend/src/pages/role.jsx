@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import DataTable from 'react-data-table-component';
 import Modal from '../components/CreateModal';
 import axios from '../axios';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
+import Swal from 'sweetalert2'
+
 
 export default function Role() {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -22,6 +26,14 @@ export default function Role() {
             console.error('Error fetching roles:', error);
         }
     };
+
+    const swalWithBootstrapButtons = Swal.mixin({
+        customClass: {
+          confirmButton: "btn btn-success",
+          cancelButton: "btn btn-danger"
+        },
+        buttonsStyling: false
+      });
 
     useEffect(() => {
         fetchRoles();
@@ -47,19 +59,22 @@ export default function Role() {
             let resp;
             if (isEditing) {
                 resp = await axios.put(`/roles/update/${selectedRole._id}`, body);
+                setAlertMessage('Le rôle a été modifié.');
             } else {
                 resp = await axios.post('/roles/create', body);
+                setAlertMessage('Le rôle a été ajouté.');
             }
 
             if (resp.status === (isEditing ? 200 : 201)) { // 200 OK for update, 201 Created for create
                 fetchRoles();
-                setAlertMessage(resp.data.message); // Set alert message from the response
+
+
+            // Set a timeout to clear the alert message after 3 seconds
+            setTimeout(() => {
+                setAlertMessage('');
+            }, 3000);
                 setIsModalOpen(false); // Close modal after successful submission
 
-                // Set a timeout to clear the alert message after 3 seconds
-                setTimeout(() => {
-                    setAlertMessage('');
-                }, 3000);
             }
         } catch (error) {
             if (error.response) {
@@ -85,18 +100,37 @@ export default function Role() {
     };
 
     const handleDelete = async (_id) => {
-        try {
-            await axios.delete(`/roles/delete/${_id}`);
-            fetchRoles();
-            setAlertMessage('Role deleted successfully.');
 
-            // Set a timeout to clear the alert message after 3 seconds
-            setTimeout(() => {
-                setAlertMessage('');
-            }, 3000);
-        } catch (error) {
-            console.error('Error deleting role:', error);
-        }
+
+        Swal.fire({
+            title: "Êtes-vous sûre",
+            text: "Vous ne pourrez pas revenir en arrière !",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Oui, Supprimer!"
+          }).then((result) => {
+            if (result.isConfirmed) {
+                try {
+                    axios.delete(`/roles/delete/${_id}`);
+                    fetchRoles();
+                    setAlertMessage('Le rôle a été supprimé.');
+
+                    // Set a timeout to clear the alert message after 3 seconds
+                    setTimeout(() => {
+                        setAlertMessage('');
+                    }, 3000);
+                        setIsModalOpen(false); // Close modal after successful submission
+
+                } catch (error) {
+                    console.error('Error deleting role:', error);
+                }
+                fetchRoles();
+            }
+          });
+
+
     };
 
     const modalFooter = (
@@ -105,14 +139,14 @@ export default function Role() {
                 type="submit"
                 className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
             >
-                {isEditing ? 'Update' : 'Create'}
+                {isEditing ? 'Modifier' : 'Ajouter'}
             </button>
             <button
                 type="button"
                 className="ml-3 bg-gray-100 transition duration-150 ease-in-out text-gray-600 hover:border-gray-400 hover:bg-gray-300 border rounded-lg text-sm px-5 py-2.5 text-center dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500 dark:hover:border-gray-500"
                 onClick={() => setIsModalOpen(false)}
             >
-                Cancel
+                Annuler
             </button>
         </>
     );
@@ -124,27 +158,30 @@ export default function Role() {
             sortable: true,
         },
         {
-            name: 'Name',
+            name: 'Rôle',
             selector: (row) => row.name,
             sortable: true,
         },
         {
             name: 'Actions',
             cell: (row) => (
-                <div>
-                    <button
-                        onClick={() => handleEdit(row)}
-                        className="text-blue-600 hover:text-blue-800"
-                    >
-                        Edit
-                    </button>
-                    <button
-                        onClick={() => handleDelete(row._id)}
-                        className="text-red-600 hover:text-red-800 ml-3"
-                    >
-                        Delete
-                    </button>
-                </div>
+                <div className="flex items-center space-x-4">
+    <button
+      onClick={() => handleEdit(row)}
+      className="text-blue-600 hover:text-blue-800 flex items-center"
+    >
+      <FontAwesomeIcon icon={faEdit} className="mr-2" />
+      Modifier
+    </button>
+
+    <button
+      onClick={() => handleDelete(row._id)}
+      className="text-red-600 hover:text-red-800 flex items-center"
+    >
+      <FontAwesomeIcon icon={faTrash} className="mr-2" />
+      Supprimer
+    </button>
+  </div>
             ),
         },
     ];
@@ -190,20 +227,20 @@ export default function Role() {
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                title={isEditing ? "Edit Role" : "Add Role"}
+                title={isEditing ? "Modifier Rôle" : "Ajouter Rôle"}
                 onSubmit={handleSubmit}
                 footer={modalFooter}
             >
                 <div>
                     <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                        Name
+                    Rôle
                     </label>
                     <input
                         type="text"
                         name="name"
                         id="name"
                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                        placeholder="Role Name"
+                        placeholder="Nom du rôle"
                         value={formData.name}
                         onChange={handleChange}
                         required
@@ -219,11 +256,11 @@ export default function Role() {
                     setIsModalOpen(true);
                 }}
             >
-                Add Role
+                Ajouter Rôle
             </button>
 
             <DataTable
-                title="Roles"
+                title="Rôles"
                 columns={columns}
                 data={roles}
                 customStyles={customStyles}

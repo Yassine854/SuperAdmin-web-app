@@ -8,7 +8,7 @@ export default function DefaultLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [usersDropdownOpen, setUsersDropdownOpen] = useState(false);
 
-    // check if user is logged in or not from server
+    // Check if user is logged in or not from server
     useEffect(() => {
         console.log('Current user state:', user);
 
@@ -27,12 +27,12 @@ export default function DefaultLayout() {
         })();
     }, []);
 
-    // if user is not logged in, redirect to login page
+    // If user is not logged in, redirect to login page
     if (!user) {
         return <Navigate to="/" />;
     }
 
-    // logout user
+    // Logout user
     const handleLogout = async () => {
         try {
             const resp = await axios.post('/logout');
@@ -51,9 +51,9 @@ export default function DefaultLayout() {
             <nav className={`fixed top-0 left-0 h-full w-64 bg-gradient-to-b from-blue-800 to-blue-600 text-white shadow-xl z-50 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out md:relative md:translate-x-0`}>
                 <div className="flex flex-col h-full">
                     <div className="flex items-center justify-between p-4 bg-blue-900">
-                        <a href="https://dcodemania.com/" className="flex items-center">
+                        <a href="#" className="flex items-center">
                             <img src="https://dcodemania.com/img/logo.svg" className="h-8 mr-3" alt="DCodeMania Logo" />
-                            <span className="text-2xl font-bold">DCodeMania</span>
+                            <span className="text-2xl font-bold">Super Admin</span>
                         </a>
                         <button className="md:hidden text-white" onClick={() => setSidebarOpen(false)}>
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -62,13 +62,17 @@ export default function DefaultLayout() {
                         </button>
                     </div>
                     <ul className="mt-4 flex-1 px-2 space-y-2">
-                    <li>
+                        <li>
                             <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'block py-3 px-4 bg-blue-700 rounded-lg shadow-lg' : 'block py-3 px-4 text-gray-200 hover:bg-blue-700 hover:shadow-lg rounded-lg'}>
                                 Dashboard
                             </NavLink>
                         </li>
-
                         <li>
+                            <NavLink to="/admins" className={({ isActive }) => isActive ? 'block py-3 px-4 bg-blue-700 rounded-lg shadow-lg' : 'block py-3 px-4 text-gray-200 hover:bg-blue-700 hover:shadow-lg rounded-lg'}>
+                                Admins Entreprises
+                            </NavLink>
+                        </li>
+                        {/* <li>
                             <div className="relative">
                                 <button
                                     onClick={() => setUsersDropdownOpen(!usersDropdownOpen)}
@@ -94,14 +98,13 @@ export default function DefaultLayout() {
                                         </li>
                                         <li>
                                             <NavLink to="/admins" className={({ isActive }) => isActive ? 'block py-3 px-4 bg-blue-700 rounded-lg shadow-lg text-white' : 'block py-3 px-4 text-blue-600 hover:bg-blue-500 hover:shadow-lg rounded-lg'}>
-                                                Admins
+                                                Admins Entreprises
                                             </NavLink>
                                         </li>
                                     </ul>
-
                                 )}
                             </div>
-                        </li>
+                        </li> */}
                         <li>
                             <NavLink to="/roles" className={({ isActive }) => isActive ? 'block py-3 px-4 bg-blue-700 rounded-lg shadow-lg' : 'block py-3 px-4 text-gray-200 hover:bg-blue-700 hover:shadow-lg rounded-lg'}>
                                 Roles
@@ -113,14 +116,14 @@ export default function DefaultLayout() {
                             </NavLink>
                         </li>
                         <li>
-                            <a onClick={handleLogout} href="#" className="block py-3 px-4 text-gray-200 hover:bg-blue-700 hover:shadow-lg rounded-lg">
-                                Logout
-                            </a>
+                            <NavLink to="/" className={({ isActive }) => isActive ? 'block py-3 px-4 bg-blue-700 rounded-lg shadow-lg' : 'block py-3 px-4 text-gray-200 hover:bg-blue-700 hover:shadow-lg rounded-lg'}>
+                                Site Web
+                            </NavLink>
                         </li>
                     </ul>
                     <div className="p-4">
-                        <a href="https://github.com/dcodemania" target="_blank" rel="noopener noreferrer" className="block py-3 px-4 text-center text-blue-900 bg-white rounded-lg shadow-lg hover:bg-gray-100">
-                            <span className="font-bold">GitHub</span>
+                        <a href="#" onClick={handleLogout} target="_blank" rel="noopener noreferrer" className="block py-3 px-4 text-center text-blue-900 bg-white rounded-lg shadow-lg hover:bg-gray-100">
+                            <span className="font-bold">Logout</span>
                         </a>
                     </div>
                 </div>
@@ -143,12 +146,17 @@ export default function DefaultLayout() {
                         </svg>
                     </button>
                     <div>
-                        <a href="https://dcodemania.com/" className="text-xl font-bold text-gray-800">DCodeMania</a>
+                        <a href="https://dcodemania.com/" className="text-xl font-bold text-gray-800">Envision</a>
                     </div>
                 </header>
                 <main className="flex-1 overflow-y-auto p-4">
                     <Outlet />
                 </main>
+                <footer className="bg-gradient-to-b from-white-800 to-blue-600 text-black py-4 mt-auto border-t border-gray-200 shadow-sm">
+                    <div className="container mx-auto text-center">
+                        <p>&copy; {new Date().getFullYear()} Envision. All rights reserved.</p>
+                    </div>
+                </footer>
             </div>
         </div>
     );

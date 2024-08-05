@@ -36,7 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admins', [AuthController::class, 'admins']);
     Route::put('/admins/update/{id}', [AuthController::class, 'updateAdmin']);
     Route::put('/admins/block/{id}', [AuthController::class, 'block']);
-    Route::put('/admins/unblock/{id}', [AuthController::class, 'block']);
+    Route::put('/admins/unblock/{id}', [AuthController::class, 'unblock']);
 
     //Clients
     Route::get('/user', [AuthController::class, 'user']);

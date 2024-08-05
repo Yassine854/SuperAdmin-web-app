@@ -10,6 +10,7 @@ use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\RegisterRequest;
 use App\Providers\RouteServiceProvider;
+use MongoDB\Laravel\Eloquent\Casts\ObjectId;
 
 class AuthController extends Controller {
     // register a new user method
@@ -126,21 +127,27 @@ class AuthController extends Controller {
 
     public function updateAdmin(Request $request, $id)
 {
+    // Convert $id to ObjectId for MongoDB compatibility
+
+
     $data = $request->validate([
         'name' => 'required|string|max:255',
         'email' => [
-                'nullable',
-                'email',
-                'max:255',
-                Rule::unique('users')->ignore($id),
-            ],
+            'required',
+            'email',
+            'max:255',
+            Rule::unique('users')->ignore($id, '_id'),
+        ],
         'password' => 'nullable|string|min:6|confirmed',
     ]);
 
     $admin = User::findOrFail($id);
 
     $admin->name = $data['name'];
-    $admin->email = $data['email'];
+
+    if (!empty($data['email'])) {
+        $admin->email = $data['email'];
+    }
 
     if (!empty($data['password'])) {
         $admin->password = Hash::make($data['password']);

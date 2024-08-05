@@ -3,7 +3,9 @@ import { useAuth } from '../contexts/AuthContext';
 import DataTable from 'react-data-table-component';
 import Modal from '../components/CreateModal';
 import axios from '../axios';
-import Swal from 'sweetalert2'
+import Swal from 'sweetalert2';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEdit, faTrash,faLock,faLockOpen } from '@fortawesome/free-solid-svg-icons';
 
 export default function Admin() {
     const { admin, setAdmin } = useAuth();
@@ -15,18 +17,22 @@ export default function Admin() {
     const [admins, setAdmins] = useState([]); // State to store admins
     const [pending, setPending] = useState(true);
     const [editMode, setEditMode] = useState(false);
+    const [alertMessage, setAlertMessage] = useState(''); // State to store alert message
+
     const [selectedAdmin, setSelectedAdmin] = useState(null);
 
+    const fetchAdmins = async () => {
+        try {
+            const response = await axios.get('/admins');
+            setAdmins(response.data.admins);
+            setPending(false);
+        } catch (error) {
+            console.error('Error fetching admins:', error);
+        }
+    };
+
     useEffect(() => {
-        const fetchAdmins = async () => {
-            try {
-                const response = await axios.get('/admins');
-                setAdmins(response.data.admins);
-                setPending(false);
-            } catch (error) {
-                console.error('Error fetching admins:', error);
-            }
-        };
+
         fetchAdmins();
     }, []);
 
@@ -64,13 +70,22 @@ export default function Admin() {
                 // Update existing admin
                 const resp = await axios.put(`/admins/update/${selectedAdmin._id}`, body);
                 if (resp.status === 200) {
-                    setAdmins(admins.map(admin => admin.id === resp.data.admin._id ? resp.data.admin : admin));
+                  fetchAdmins();
+                  setAlertMessage("L'admin a été modifié.");
+                  setTimeout(() => {
+                    setAlertMessage('');
+                }, 3000);
+
                 }
             } else {
                 // Create new admin
                 const resp = await axios.post('/CreateUser', { ...body, role: '1' });
                 if (resp.status === 200) {
-                    setAdmins([...admins, resp.data.admin]);
+                    fetchAdmins();
+                  setAlertMessage("L'admin a été ajouté.");
+                  setTimeout(() => {
+                    setAlertMessage('');
+                }, 3000);
                 }
             }
             setIsModalOpen(false); // Close modal after successful submission
@@ -99,21 +114,22 @@ export default function Admin() {
         try {
 
             Swal.fire({
-                title: "Are you sure?",
-                text: "You won't be able to revert this!",
+                title: "Êtes-vous sûre?",
                 icon: "warning",
                 showCancelButton: true,
                 confirmButtonColor: "#3085d6",
                 cancelButtonColor: "#d33",
-                confirmButtonText: "Yes, Block!"
+                confirmButtonText: "Oui, Bloquer!"
               }).then((result) => {
                 if (result.isConfirmed) {
                   axios.put(`/admins/block/${_id}`);
-                  Swal.fire({
-                    title: "Blocked!",
-                    icon: "success"
-                  });
+                  fetchAdmins();
+                  setAlertMessage("L'admin a été bloqué.");
+                  setTimeout(() => {
+                    setAlertMessage('');
+                }, 3000);
                 }
+                fetchAdmins();
               });
             // setAdmins([...admins, resp.data.admin]);
         } catch (error) {
@@ -126,23 +142,23 @@ export default function Admin() {
         try {
 
             Swal.fire({
-                title: "Are you sure?",
-                text: "You won't be able to revert this!",
+                title: "Êtes-vous sûre?",
                 icon: "warning",
                 showCancelButton: true,
                 confirmButtonColor: "#3085d6",
                 cancelButtonColor: "#d33",
-                confirmButtonText: "Yes, UnBlock!"
+                confirmButtonText: "Oui, Débloquer!"
               }).then((result) => {
                 if (result.isConfirmed) {
                   axios.put(`/admins/unblock/${_id}`);
-                  Swal.fire({
-                    title: "UnBlocked!",
-                    icon: "success"
-                  });
+                  fetchAdmins();
+                  setAlertMessage("L'admin a été débloqué.");
+                  setTimeout(() => {
+                    setAlertMessage('');
+                }, 3000);
                 }
+                fetchAdmins();
               });
-            // setAdmins([...admins, resp.data.admin]);
         } catch (error) {
             console.error('Error Unblocking admin:', error);
         }
@@ -155,7 +171,7 @@ export default function Admin() {
             sortable: true,
         },
         {
-            name: 'Name',
+            name: 'Nom',
             selector: (row) => row.name,
             sortable: true,
         },
@@ -169,10 +185,11 @@ export default function Admin() {
             cell: (row) => (
                 <div className="flex space-x-2">
                     <button
-                        onClick={() => handleEdit(row)}
-                        className="text-blue-600 hover:text-blue-800"
+                    onClick={() => handleEdit(row)}
+                    className="text-blue-600 hover:text-blue-800 flex items-center"
                     >
-                        Edit
+                    <FontAwesomeIcon icon={faEdit} className="mr-2" />
+                    Modifier
                     </button>
 
 
@@ -181,23 +198,25 @@ export default function Admin() {
                     {(() => {
         if (row.blocked==false){
             return (
-                    <button
-                        onClick={() => handleBlock(row._id)}
-                        className="text-red-600 hover:text-red-800"
-                    >
-                        Block
-                    </button>
+                <button
+                onClick={() => handleBlock(row._id)}
+                className="text-red-600 hover:text-red-800 flex items-center"
+              >
+                <FontAwesomeIcon icon={faLock} className="mr-2" />
+                Bloquer
+              </button>
             )
         }
         else
             return (
 
-        <button
-                        onClick={() => handleUnBlock(row._id)}
-                        className="text-green-600 hover:text-green-800"
-                    >
-                        Unblock
-                    </button>
+                <button
+                onClick={() => handleUnBlock(row._id)}
+                className="text-green-600 hover:text-green-800 flex items-center"
+              >
+                <FontAwesomeIcon icon={faLockOpen} className="mr-2" />
+                Débloquer
+              </button>
               )
 
       })()}
@@ -240,10 +259,16 @@ export default function Admin() {
 
     return (
         <>
+        {alertMessage && (
+                <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
+                    <p className="font-bold">{alertMessage}</p>
+                </div>
+            )}
+
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                title={editMode ? "Edit Admin" : "Add Admin"}
+                title={editMode ? "Modifier Admin" : "Ajouter Admin"}
                 onSubmit={handleSubmit}
                 footer={(
                     <>
@@ -251,7 +276,7 @@ export default function Admin() {
                             type="submit"
                             className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                         >
-                            {editMode ? 'Update' : 'Create'}
+                            {editMode ? 'Modifier' : 'Ajouter'}
                         </button>
                         <button
                             type="button"
@@ -265,7 +290,7 @@ export default function Admin() {
             >
                 <div>
                     <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-                        Name
+                        Nom
                     </label>
                     <input
                         type="text"
@@ -300,7 +325,7 @@ export default function Admin() {
                         htmlFor="password"
                         className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                     >
-                        Password
+                        Mot de passe
                     </label>
                     <input
                         type="password"
@@ -318,7 +343,7 @@ export default function Admin() {
                         htmlFor="cpassword"
                         className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                     >
-                        Confirm password
+                        Confirmer mot de passe
                     </label>
                     <input
                         type="password"
@@ -336,7 +361,7 @@ export default function Admin() {
                 className="block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center light:bg-blue-600 light:hover:bg-blue-700 light:focus:ring-blue-800 mb-4"
                 onClick={() => setIsModalOpen(true)}
             >
-                Add Admin
+                Ajouter Admin
             </button>
 
             <DataTable
