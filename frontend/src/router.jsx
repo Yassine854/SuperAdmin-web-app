@@ -5,6 +5,8 @@ import Client from './pages/client';
 import Admin from './pages/admin';
 import Dashboard from './pages/dashboard';
 import Role from './pages/role';
+import Admin_Sliders from './pages/slider/admin';
+import Slide from './pages/slider/slide';
 
 
 import Register from './pages/Register';
@@ -49,6 +51,14 @@ const router = createBrowserRouter([
             {
 				path: '/roles',
 				element: <Role />,
+			},
+            {
+				path: '/sliders/admins',
+				element: <Admin_Sliders />,
+			},
+            {
+				path: '/sliders/:id',
+				element: <Slide />,
 			},
 		],
 	},

@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SliderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,9 +42,12 @@ Route::middleware('auth:sanctum')->group(function () {
     //Clients
     Route::get('/user', [AuthController::class, 'user']);
 
+    //Slider
 
-
-
+    Route::get('/sliders/{admin_id}', [SliderController::class, 'index']);
+    Route::post('/sliders/create/{admin_id}', [SliderController::class, 'create']);
+    Route::put('/sliders/update/{admin_id}/{slider_id}', [SliderController::class, 'update']);
+    Route::delete('/sliders/delete/{admin_id}/{slider_id}', [SliderController::class, 'destroy']);
 
 
     // Route::get('/clients', [AuthController::class, 'clients']);

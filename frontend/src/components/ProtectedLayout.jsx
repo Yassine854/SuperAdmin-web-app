@@ -116,6 +116,11 @@ export default function DefaultLayout() {
                             </NavLink>
                         </li>
                         <li>
+                            <NavLink to="/sliders/admins" className={({ isActive }) => isActive ? 'block py-3 px-4 bg-blue-700 rounded-lg shadow-lg' : 'block py-3 px-4 text-gray-200 hover:bg-blue-700 hover:shadow-lg rounded-lg'}>
+                                Sliders
+                            </NavLink>
+                        </li>
+                        <li>
                             <NavLink to="/" className={({ isActive }) => isActive ? 'block py-3 px-4 bg-blue-700 rounded-lg shadow-lg' : 'block py-3 px-4 text-gray-200 hover:bg-blue-700 hover:shadow-lg rounded-lg'}>
                                 Site Web
                             </NavLink>
